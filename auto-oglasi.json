@@ -1,0 +1,14 @@
+{
+  "cars": [
+    {
+      "id": 1,
+      "naziv": "VW Golf",
+      "godina": 2020,
+      "kilometri": "50,000 km",
+      "cijena": "12,000€",
+      "vlasnik": "091 123 4567",
+      "opis": "Odličan auto, redovito servisiran.",
+      "slike": ["img/placeholder.jpg"]
+    }
+  ]
+}
