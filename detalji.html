@@ -125,20 +125,18 @@
   </div>
 
   <script>
-    const GIST_ID = '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';
-    const GITHUB_TOKEN = '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';
-    const GIST_FILENAME = 'auto-oglasi.json';
+    const JSON_PATH = 'auto-oglasi.json';
     let currentCar = null;
     let currentImageIndex = 0;
 
     async function loadCar(id) {
       try {
-        const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+        const response = await fetch(JSON_PATH);
         const data = await response.json();
-        const cars = JSON.parse(data.files[GIST_FILENAME].content).cars || [];
+        const cars = data.cars || [];
         return cars.find(c => c.id == id);
       } catch (error) {
-        console.error('Gist load error:', error);
+        console.error('Load error:', error);
         return null;
       }
     }
@@ -165,31 +163,13 @@
           ` : ''}
         </div>
         <div class="info-grid">
-          <div class="info-item">
-            <span class="label">Naziv:</span>
-            <span class="value">${currentCar.naziv}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Godina:</span>
-            <span class="value">${currentCar.godina}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Kilometraža:</span>
-            <span class="value">${currentCar.kilometri}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Cijena:</span>
-            <span class="value">${currentCar.cijena}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Kontakt:</span>
-            <span class="value">${currentCar.vlasnik}</span>
-          </div>
+          <div class="info-item"><span class="label">Naziv:</span><span class="value">${currentCar.naziv}</span></div>
+          <div class="info-item"><span class="label">Godina:</span><span class="value">${currentCar.godina}</span></div>
+          <div class="info-item"><span class="label">Kilometraža:</span><span class="value">${currentCar.kilometri}</span></div>
+          <div class="info-item"><span class="label">Cijena:</span><span class="value">${currentCar.cijena}</span></div>
+          <div class="info-item"><span class="label">Kontakt:</span><span class="value">${currentCar.vlasnik}</span></div>
         </div>
-        <div class="description">
-          <h3>Opis</h3>
-          <p>${currentCar.opis || 'Nema dostupnog opisa'}</p>
-        </div>
+        <div class="description"><h3>Opis</h3><p>${currentCar.opis || 'Nema dostupnog opisa'}</p></div>
       `;
     }
 
@@ -204,11 +184,7 @@
       const carId = parseInt(urlParams.get('id'));
 
       if (!carId) {
-        document.getElementById('sadrzaj').innerHTML = `
-          <div class="error">
-            <p>Nevažeći ID oglasa</p>
-          </div>
-        `;
+        document.getElementById('sadrzaj').innerHTML = `<div class="error"><p>Nevažeći ID oglasa</p></div>`;
         return;
       }
 
@@ -217,11 +193,7 @@
         if (!currentCar) throw new Error('Oglas nije pronađen');
         renderDetails();
       } catch (error) {
-        document.getElementById('sadrzaj').innerHTML = `
-          <div class="error">
-            <p>${error.message}</p>
-          </div>
-        `;
+        document.getElementById('sadrzaj').innerHTML = `<div class="error"><p>${error.message}</p></div>`;
       }
     })();
   </script>

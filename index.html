@@ -101,57 +101,6 @@
       color: #7f8c8d;
     }
 
-    .button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .button:hover {
-      background-color: #0056b3;
-    }
-
-    .form-section {
-      margin-bottom: 40px;
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .form-section input,
-    .form-section textarea {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    .delete-all {
-      background-color: #e74c3c;
-      margin-bottom: 20px;
-    }
-
-    .delete-all:hover {
-      background-color: #c0392b;
-    }
-
-    .sync-btn {
-      background-color: #28a745;
-      margin-left: 10px;
-    }
-
-    .sync-btn:hover {
-      background-color: #218838;
-    }
-
     @media (max-width: 768px) {
       .grid {
         grid-template-columns: 1fr;
@@ -171,67 +120,23 @@
       <button class="filter-btn" data-filter="cheap">Jeftini (5k€)</button>
     </div>
 
-    <div>
-      <button class="button delete-all" onclick="obrisiSve()">Obriši sve oglase</button>
-    </div>
-
-    <div class="form-section">
-      <h2>Dodaj/Uredi automobil</h2>
-      <input type="hidden" id="editId">
-      <input type="text" id="naziv" placeholder="Naziv automobila *" required>
-      <input type="text" id="kilometri" placeholder="Kilometraža">
-      <input type="number" id="godina" placeholder="Godina" min="1990" max="2024">
-      <input type="text" id="cijena" placeholder="Cijena">
-      <input type="tel" id="vlasnik" placeholder="Kontakt broj">
-      <textarea id="opis" placeholder="Opis" rows="4"></textarea>
-      <input type="file" id="slikaFile" accept="image/*" multiple>
-      <button class="button" onclick="dodajIliUrediAuto()">Spremi</button>
-    </div>
-
     <div id="oglasi" class="grid"></div>
   </div>
 
   <script>
-    const GIST_ID = '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';
-    const GITHUB_TOKEN = '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';
-    const GIST_FILENAME = 'auto-oglasi.json';
+    const JSON_PATH = 'auto-oglasi.json';
 
     let currentFilter = 'all';
     let searchQuery = '';
 
     async function loadFromCloud() {
       try {
-        const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+        const response = await fetch(JSON_PATH);
         const data = await response.json();
-        return JSON.parse(data.files[GIST_FILENAME].content).cars || [];
+        return data.cars || [];
       } catch (error) {
-        console.error('Gist load error:', error);
+        console.error('Load error:', error);
         return [];
-      }
-    }
-
-    async function saveToCloud(cars) {
-      try {
-        const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${GITHUB_TOKEN}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            files: {
-              [GIST_FILENAME]: {
-                content: JSON.stringify({ cars })
-              }
-            }
-          })
-        });
-
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-        return await response.json();
-      } catch (error) {
-        console.error('Gist save error:', error);
-        throw error;
       }
     }
 
@@ -239,11 +144,10 @@
       const cars = await loadFromCloud();
       const filtered = cars.filter(car => {
         const searchMatch = car.naziv.toLowerCase().includes(searchQuery) ||
-          car.opis.toLowerCase().includes(searchQuery);
+                            car.opis.toLowerCase().includes(searchQuery);
         const currentYear = new Date().getFullYear();
         const age = currentYear - car.godina;
         const price = parseFloat(car.cijena.replace(/[^\d.]/g, ''));
-
         switch (currentFilter) {
           case 'new': return age <= 2 && searchMatch;
           case 'old': return age >= 5 && searchMatch;
@@ -260,122 +164,26 @@
             <h3>${car.naziv}</h3>
             <p>${car.kilometri}</p>
             <p>${car.cijena}</p>
-            <div class="card-actions">
-              <button class="button" onclick="event.stopPropagation(); urediAuto(${car.id})">Uredi</button>
-              <button class="button delete-btn" onclick="event.stopPropagation(); obrisiAuto(${car.id})">Obriši</button>
-            </div>
           </div>
         </div>
       `).join('');
     }
 
-    async function handleImageUpload(existingImages = []) {
-      const files = document.getElementById('slikaFile').files;
-      if (!files.length) return existingImages;
-      return [...existingImages, ...await Promise.all([...files].map(file => {
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
-          reader.readAsDataURL(file);
-        });
-      }))];
-    }
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      searchQuery = e.target.value.toLowerCase();
+      prikaziOglase();
+    });
 
-    async function dodajIliUrediAuto() {
-      if (!navigator.onLine) {
-        alert('Niste spojeni na internet!');
-        return;
-      }
-
-      const editId = document.getElementById('editId').value;
-      const isEdit = !!editId;
-      
-      const cars = await loadFromCloud();
-      const carIndex = cars.findIndex(c => c.id == editId);
-
-      const newCar = {
-        id: isEdit ? parseInt(editId) : Date.now(),
-        naziv: document.getElementById('naziv').value,
-        kilometri: document.getElementById('kilometri').value,
-        godina: parseInt(document.getElementById('godina').value),
-        cijena: document.getElementById('cijena').value,
-        vlasnik: document.getElementById('vlasnik').value,
-        opis: document.getElementById('opis').value,
-        slike: await handleImageUpload(carIndex >= 0 ? cars[carIndex].slike : []),
-        createdAt: carIndex >= 0 ? cars[carIndex].createdAt : new Date().toISOString()
-      };
-
-      if (isEdit && carIndex >= 0) {
-        cars[carIndex] = newCar;
-      } else {
-        cars.push(newCar);
-      }
-
-      await saveToCloud(cars);
-      await prikaziOglase();
-      ocistiFormu();
-    }
-
-    async function obrisiAuto(id) {
-      if (!confirm("Jeste li sigurni?")) return;
-      const cars = await loadFromCloud();
-      const filtered = cars.filter(c => c.id !== id);
-      await saveToCloud(filtered);
-      await prikaziOglase();
-    }
-
-    async function obrisiSve() {
-      if (!confirm("Ovo će obrisati SVE oglase!")) return;
-      await saveToCloud([]);
-      await prikaziOglase();
-    }
-
-    async function urediAuto(id) {
-      const cars = await loadFromCloud();
-      const car = cars.find(c => c.id === id);
-      if (!car) return;
-
-      document.getElementById('editId').value = car.id;
-      document.getElementById('naziv').value = car.naziv;
-      document.getElementById('kilometri').value = car.kilometri;
-      document.getElementById('godina').value = car.godina;
-      document.getElementById('cijena').value = car.cijena;
-      document.getElementById('vlasnik').value = car.vlasnik;
-      document.getElementById('opis').value = car.opis;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function ocistiFormu() {
-      document.getElementById('editId').value = '';
-      document.querySelectorAll('.form-section input, .form-section textarea').forEach(el => el.value = '');
-      document.getElementById('slikaFile').value = '';
-    }
-
-    (async () => {
-      const cars = await loadFromCloud();
-      if (cars.length === 0) {
-        const hardcodedCars = [
-          // Add your hardcoded cars here
-        ];
-        await saveToCloud(hardcodedCars);
-      }
-
-      document.getElementById('searchInput').addEventListener('input', (e) => {
-        searchQuery = e.target.value.toLowerCase();
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
         prikaziOglase();
       });
+    });
 
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          currentFilter = btn.dataset.filter;
-          prikaziOglase();
-        });
-      });
-
-      await prikaziOglase();
-    })();
+    prikaziOglase();
   </script>
 </body>
 </html>
