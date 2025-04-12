@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Auto Oglasi</title>
   <style>
+    /* Maintain existing CSS styles */
     body {
       font-family: Arial, sans-serif;
       background-color: #f2f2f2;
@@ -101,18 +102,12 @@
       color: #7f8c8d;
     }
 
-    /* Form Styles */
     .form-section {
       background: white;
       padding: 25px;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       margin-bottom: 30px;
-    }
-
-    .form-section h2 {
-      color: #2c3e50;
-      margin-top: 0;
     }
 
     .form-input {
@@ -152,13 +147,13 @@
     <!-- Add Car Form -->
     <div class="form-section">
       <h2>Dodaj novi automobil</h2>
-      <input type="text" class="form-input" id="carName" placeholder="Naziv automobila">
-      <input type="text" class="form-input" id="carPrice" placeholder="Cijena">
-      <input type="text" class="form-input" id="carYear" placeholder="Godina proizvodnje">
-      <input type="text" class="form-input" id="carMileage" placeholder="Kilometraža">
-      <textarea class="form-input" id="carDescription" placeholder="Opis" rows="4"></textarea>
-      <input type="file" class="form-input" id="carImages" accept="image/*" multiple>
-      <button class="submit-btn" onclick="addCar()">Dodaj automobil</button>
+      <input type="text" class="form-input" id="carName" placeholder="Naziv automobila" required>
+      <input type="text" class="form-input" id="carPrice" placeholder="Cijena (€)" required>
+      <input type="number" class="form-input" id="carYear" placeholder="Godina proizvodnje" min="1990" max="2024" required>
+      <input type="text" class="form-input" id="carMileage" placeholder="Kilometraža (km)" required>
+      <textarea class="form-input" id="carDescription" placeholder="Opis" rows="4" required></textarea>
+      <input type="file" class="form-input" id="carImages" accept="image/*" multiple required>
+      <button class="submit-btn" onclick="handleAddCar()">Dodaj automobil</button>
     </div>
 
     <!-- Search and Filters -->
@@ -167,7 +162,7 @@
       <button class="filter-btn active" data-filter="all">Svi</button>
       <button class="filter-btn" data-filter="new">Novi (0-2g)</button>
       <button class="filter-btn" data-filter="old">Stariji (5+g)</button>
-      <button class="filter-btn" data-filter="cheap">Jeftini (5k€)</button>
+      <button class="filter-btn" data-filter="cheap">Jeftini (<5k€)</button>
     </div>
 
     <!-- Cars Grid -->
@@ -175,45 +170,62 @@
   </div>
 
   <script>
+    // Data Handling
     let cars = JSON.parse(localStorage.getItem('cars')) || [];
 
-    function addCar() {
+    // Core Functions
+    function handleAddCar() {
       const newCar = {
         id: Date.now(),
-        name: document.getElementById('carName').value,
-        price: document.getElementById('carPrice').value,
-        year: document.getElementById('carYear').value,
-        mileage: document.getElementById('carMileage').value,
-        description: document.getElementById('carDescription').value,
-        images: []
+        name: document.getElementById('carName').value.trim(),
+        price: parseFloat(document.getElementById('carPrice').value.replace(/[^\d.]/g, '')),
+        year: parseInt(document.getElementById('carYear').value),
+        mileage: document.getElementById('carMileage').value.trim(),
+        description: document.getElementById('carDescription').value.trim(),
+        images: [],
+        dateAdded: new Date().toISOString(),
+        lastUpdated: new Date().toISOString()
       };
+
+      // Validate inputs
+      if (!newCar.name || isNaN(newCar.price) || isNaN(newCar.year)) {
+        alert('Molimo ispunite sva obavezna polja ispravno!');
+        return;
+      }
 
       // Handle image upload
       const files = document.getElementById('carImages').files;
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          newCar.images.push(e.target.result);
-        };
-        reader.readAsDataURL(file);
-      });
+      if (files.length > 0) {
+        Array.from(files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            newCar.images.push(e.target.result);
+            if (newCar.images.length === files.length) saveCar(newCar);
+          };
+          reader.readAsDataURL(file);
+        });
+      } else {
+        saveCar(newCar);
+      }
+    }
 
-      cars.push(newCar);
+    function saveCar(car) {
+      cars.push(car);
       localStorage.setItem('cars', JSON.stringify(cars));
       displayCars();
       clearForm();
     }
 
-    function displayCars() {
+    function displayCars(filteredCars = cars) {
       const grid = document.getElementById('carsGrid');
-      grid.innerHTML = cars.map(car => `
-        <div class="card">
+      grid.innerHTML = filteredCars.map(car => `
+        <div class="card" data-id="${car.id}">
           ${car.images.length ? `<img src="${car.images[0]}" alt="${car.name}">` : ''}
           <div class="card-content">
             <h3>${car.name}</h3>
-            <p>${car.price}</p>
-            <p>${car.year}</p>
+            <p>${car.year}. godina</p>
             <p>${car.mileage}</p>
+            <p><strong>${car.price.toLocaleString('hr-HR')} €</strong></p>
             <p>${car.description}</p>
           </div>
         </div>
@@ -229,7 +241,38 @@
       document.getElementById('carImages').value = '';
     }
 
-    // Initial display
+    // Search and Filter
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const filtered = cars.filter(car => 
+        car.name.toLowerCase().includes(searchTerm) ||
+        car.description.toLowerCase().includes(searchTerm)
+      );
+      displayCars(filtered);
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        const filter = this.dataset.filter;
+        const currentYear = new Date().getFullYear();
+        
+        const filtered = cars.filter(car => {
+          switch(filter) {
+            case 'new': return currentYear - car.year <= 2;
+            case 'old': return currentYear - car.year >= 5;
+            case 'cheap': return car.price < 5000;
+            default: return true;
+          }
+        });
+        
+        displayCars(filtered);
+      });
+    });
+
+    // Initial Load
     displayCars();
   </script>
 </body>
