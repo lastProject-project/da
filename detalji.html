@@ -129,6 +129,11 @@
     let currentCar = null;
     let currentImageIndex = 0;
 
+function loadCar(id) {
+    const cars = JSON.parse(localStorage.getItem('cars')) || [];
+    return cars.find(c => c.id == id);
+  }
+    
     async function loadCar(id) {
       try {
         const response = await fetch(JSON_PATH);
