@@ -2,13 +2,113 @@
   "cars": [
     {
       "id": 1,
-      "naziv": "VW Golf",
-      "godina": 2020,
-      "kilometri": "50,000 km",
-      "cijena": "12000€",
-      "vlasnik": "091 123 4567",
-      "opis": "Odličan auto, redovito servisiran.",
-      "slike": ["img/placeholder.jpg"]
+      "naziv": "Volkswagen Golf",
+      "kilometri": "150000 km",
+      "godina": 2015,
+      "cijena": "9000 EUR",
+      "vlasnik": "0912345678",
+      "opis": "Odlično stanje, redovno servisiran.",
+      "slike": ["img/golf.jpg"],
+      "createdAt": "2023-01-01T12:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "naziv": "Audi A4",
+      "kilometri": "120000 km",
+      "godina": 2018,
+      "cijena": "15000 EUR",
+      "vlasnik": "0923456789",
+      "opis": "S-line paket, dizel.",
+      "slike": ["img/audi_a4.jpg"],
+      "createdAt": "2023-01-01T12:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "naziv": "BMW 320d",
+      "kilometri": "170000 km",
+      "godina": 2014,
+      "cijena": "12500 EUR",
+      "vlasnik": "0934567890",
+      "opis": "Full oprema, registriran godinu dana.",
+      "slike": ["img/bmw_320d.jpg"],
+      "createdAt": "2023-01-01T12:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "naziv": "Opel Astra",
+      "kilometri": "130000 km",
+      "godina": 2017,
+      "cijena": "8500 EUR",
+      "vlasnik": "0945678901",
+      "opis": "Prvi vlasnik, garažiran auto.",
+      "slike": ["img/astra.jpg"],
+      "createdAt": "2023-01-01T12:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "naziv": "Renault Megane",
+      "kilometri": "110000 km",
+      "godina": 2016,
+      "cijena": "7500 EUR",
+      "vlasnik": "0956789012",
+      "opis": "Mali potrošač, gradski auto.",
+      "slike": ["img/megane.jpg"],
+      "createdAt": "2023-01-01T12:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "naziv": "Toyota Corolla",
+      "kilometri": "90000 km",
+      "godina": 2019,
+      "cijena": "13000 EUR",
+      "vlasnik": "0967890123",
+      "opis": "Pouzdan japanski auto.",
+      "slike": ["img/corolla.jpg"],
+      "createdAt": "2023-01-01T12:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "naziv": "Peugeot 308",
+      "kilometri": "140000 km",
+      "godina": 2015,
+      "cijena": "6800 EUR",
+      "vlasnik": "0978901234",
+      "opis": "Ekonomično vozilo, novi akumulator.",
+      "slike": ["img/peugeot_308.jpg"],
+      "createdAt": "2023-01-01T12:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "naziv": "Ford Focus",
+      "kilometri": "160000 km",
+      "godina": 2016,
+      "cijena": "7000 EUR",
+      "vlasnik": "0989012345",
+      "opis": "Dobro očuvan, uredna unutrašnjost.",
+      "slike": ["img/focus.jpg"],
+      "createdAt": "2023-01-01T12:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "naziv": "Mazda 3",
+      "kilometri": "100000 km",
+      "godina": 2018,
+      "cijena": "10000 EUR",
+      "vlasnik": "0990123456",
+      "opis": "Dinamična vožnja, redovni servisi.",
+      "slike": ["img/mazda3.jpg"],
+      "createdAt": "2023-01-01T12:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "naziv": "Hyundai i30",
+      "kilometri": "95000 km",
+      "godina": 2019,
+      "cijena": "9500 EUR",
+      "vlasnik": "0911234567",
+      "opis": "Mali gradski auto, odlična oprema.",
+      "slike": ["img/i30.jpg"],
+      "createdAt": "2023-01-01T12:00:00.000Z"
     }
   ]
 }
