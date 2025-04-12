@@ -112,6 +112,18 @@
   <div class="container">
     <h1>Auto Oglasi</h1>
 
+     <!-- Add this form section -->
+    <div class="form-section">
+      <h2>Dodaj novi automobil</h2>
+      <input type="text" id="naziv" placeholder="Naziv automobila *" required>
+      <input type="text" id="kilometri" placeholder="Kilometraža">
+      <input type="number" id="godina" placeholder="Godina" min="1990" max="2024">
+      <input type="text" id="cijena" placeholder="Cijena">
+      <textarea id="opis" placeholder="Opis" rows="4"></textarea>
+      <input type="file" id="slikaFile" accept="image/*" multiple>
+      <button class="button" onclick="dodajAuto()">Dodaj automobil</button>
+    </div>
+    
     <div class="search-filters">
       <input type="text" class="search-bar" placeholder="Pretraži oglase..." id="searchInput">
       <button class="filter-btn active" data-filter="all">Svi</button>
@@ -129,6 +141,61 @@
     let currentFilter = 'all';
     let searchQuery = '';
 
+async function dodajAuto() {
+      const newCar = {
+        id: Date.now(),
+        naziv: document.getElementById('naziv').value,
+        kilometri: document.getElementById('kilometri').value,
+        godina: parseInt(document.getElementById('godina').value),
+        cijena: document.getElementById('cijena').value,
+        opis: document.getElementById('opis').value,
+        slike: await handleImageUpload()
+      };
+
+      cars.push(newCar);
+      await prikaziOglase();
+      ocistiFormu();
+    }
+
+    async function handleImageUpload() {
+      const files = document.getElementById('slikaFile').files;
+      return await Promise.all([...files].map(compressImage));
+    }
+
+    function compressImage(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const scale = Math.min(800 / img.width, 800 / img.height);
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(blob => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.readAsDataURL(blob);
+            }, 'image/jpeg', 0.7);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function ocistiFormu() {
+      document.getElementById('naziv').value = '';
+      document.getElementById('kilometri').value = '';
+      document.getElementById('godina').value = '';
+      document.getElementById('cijena').value = '';
+      document.getElementById('opis').value = '';
+      document.getElementById('slikaFile').value = '';
+    }
+
+    
     async function loadFromCloud() {
       try {
         const response = await fetch(JSON_PATH);
@@ -141,6 +208,7 @@
     }
 
     async function prikaziOglase() {
+      const filtered = cars.filter(car => {
       const cars = await loadFromCloud();
       const filtered = cars.filter(car => {
         const searchMatch = car.naziv.toLowerCase().includes(searchQuery) ||
@@ -153,20 +221,26 @@
           case 'old': return age >= 5 && searchMatch;
           case 'cheap': return price < 5000 && searchMatch;
           default: return searchMatch;
-        }
+        }}
       });
 
       const oglasiDiv = document.getElementById('oglasi');
       oglasiDiv.innerHTML = filtered.map(car => `
-        <div class="card" onclick="window.location.href='detalji.html?id=${car.id}'">
-          <img src="${car.slike?.[0] || 'img/placeholder.jpg'}" alt="${car.naziv}">
+        <div class="card">
+          ${car.slike?.length ? `<img src="${car.slike[0]}" alt="${car.naziv}">` : ''}
           <div class="card-content">
             <h3>${car.naziv}</h3>
             <p>${car.kilometri}</p>
             <p>${car.cijena}</p>
+            <button class="button delete-btn" onclick="obrisiAuto(${car.id})">Obriši</button>
           </div>
         </div>
       `).join('');
+    }
+
+    function obrisiAuto(id) {
+      cars = cars.filter(car => car.id !== id);
+      prikaziOglase();
     }
 
     document.getElementById('searchInput').addEventListener('input', (e) => {
