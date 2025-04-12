@@ -177,38 +177,28 @@
     function handleAddCar() {
       const newCar = {
         id: Date.now(),
-        name: document.getElementById('carName').value.trim(),
-        price: parseFloat(document.getElementById('carPrice').value.replace(/[^\d.]/g, '')),
-        year: parseInt(document.getElementById('carYear').value),
-        mileage: document.getElementById('carMileage').value.trim(),
-        description: document.getElementById('carDescription').value.trim(),
-        images: [],
-        dateAdded: new Date().toISOString(),
-        lastUpdated: new Date().toISOString()
+        naziv: document.getElementById('naziv').value.trim(),
+        cijena: parseFloat(document.getElementById('cijena').value.replace(/[^\d.]/g, '')),
+        godina: parseInt(document.getElementById('godina').value),
+        kilometri: document.getElementById('kilometri').value.trim() + ' km',
+        opis: document.getElementById('opis').value.trim(),
+        vlasnik: document.getElementById('vlasnik').value.trim(),
+        slike: []
       };
 
-      // Validate inputs
-      if (!newCar.name || isNaN(newCar.price) || isNaN(newCar.year)) {
-        alert('Molimo ispunite sva obavezna polja ispravno!');
-        return;
-      }
-
       // Handle image upload
-      const files = document.getElementById('carImages').files;
-      if (files.length > 0) {
-        Array.from(files).forEach(file => {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            newCar.images.push(e.target.result);
-            if (newCar.images.length === files.length) saveCar(newCar);
-          };
-          reader.readAsDataURL(file);
-        });
-      } else {
-        saveCar(newCar);
-      }
-    }
+      const files = document.getElementById('slike').files;
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          newCar.slike.push(e.target.result);
+          if (newCar.slike.length === files.length) saveCar(newCar);
+        };
+        reader.readAsDataURL(file);
+      });
 
+      if (files.length === 0) saveCar(newCar);
+    }
     function saveCar(car) {
       cars.push(car);
       localStorage.setItem('cars', JSON.stringify(cars));
@@ -219,14 +209,13 @@
     function displayCars(filteredCars = cars) {
       const grid = document.getElementById('carsGrid');
       grid.innerHTML = filteredCars.map(car => `
-        <div class="card" data-id="${car.id}">
-          ${car.images.length ? `<img src="${car.images[0]}" alt="${car.name}">` : ''}
+        <div class="card" onclick="window.location.href='detalji.html?id=${car.id}'">
+          ${car.slike.length ? `<img src="${car.slike[0]}" alt="${car.naziv}">` : ''}
           <div class="card-content">
-            <h3>${car.name}</h3>
-            <p>${car.year}. godina</p>
-            <p>${car.mileage}</p>
-            <p><strong>${car.price.toLocaleString('hr-HR')} €</strong></p>
-            <p>${car.description}</p>
+            <h3>${car.naziv}</h3>
+            <p>${car.godina}</p>
+            <p>${car.kilometri}</p>
+            <p><strong>${car.cijena.toLocaleString('hr-HR')} €</strong></p>
           </div>
         </div>
       `).join('');
